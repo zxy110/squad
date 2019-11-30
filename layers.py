@@ -23,18 +23,39 @@ class Embedding(nn.Module):
         hidden_size (int): Size of hidden activations.
         drop_prob (float): Probability of zero-ing out activations
     """
-    def __init__(self, word_vectors, hidden_size, drop_prob):
+    def __init__(self, word_vectors, word_vectors_char, hidden_size, drop_prob):
         super(Embedding, self).__init__()
         self.drop_prob = drop_prob
+        self.dropout = nn.Dropout(p=drop_prob)
+
+        # add CharEmbedding
+        self.char_dim = 64
+        self.char_channel_size = word_vectors_char.size(1)
+        self.char_channel_width = 16
+
+        self.char_emb = nn.Embedding.from_pretrained(word_vectors_char)
+        nn.init.uniform_(self.char_emb.weight, -0.001, 0.001)
+        self.char_conv = nn.Conv2d(1, self.char_channel_size, (self.char_dim, self.char_channel_width))
+
         self.embed = nn.Embedding.from_pretrained(word_vectors)
-        self.proj = nn.Linear(word_vectors.size(1), hidden_size, bias=False)
+
+        self.proj = nn.Linear(word_vectors.size(1) + word_vectors_char.size(1), hidden_size, bias=False)
         self.hwy = HighwayEncoder(2, hidden_size)
 
-    def forward(self, x):
-        emb = self.embed(x)   # (batch_size, seq_len, embed_size)
-        emb = F.dropout(emb, self.drop_prob, self.training)
-        emb = self.proj(emb)  # (batch_size, seq_len, hidden_size)
-        emb = self.hwy(emb)   # (batch_size, seq_len, hidden_size)
+    def forward(self, x, xc):
+        def char_emb_layer(x):
+            batch_size = x.size(0)
+            x = self.dropout(self.char_emb(x))
+            x = x.view(-1, self.char_dim, x.size(2)).unsqueeze(1)
+            x = self.char_conv(x).squeeze()
+            x = x.view(batch_size, -1, self.char_channel_size)
+            return x
+
+        char = char_emb_layer(xc)
+        word = self.embed(x)
+        emb = torch.cat([char, word], dim=-1)
+        emb = self.proj(emb)
+        emb = self.hwy(emb)
 
         return emb
 

@@ -1,0 +1,27 @@
+[11.28.19 19:28:50] Args: {
+    "batch_size": 64,
+    "char_emb_file": "./data/char_emb.json",
+    "dev_eval_file": "./data/dev_eval.json",
+    "dev_record_file": "./data/dev.npz",
+    "hidden_size": 100,
+    "load_path": ".\\save\\train\\baseline-01\\best.pth.tar",
+    "max_ans_len": 15,
+    "name": "test1",
+    "num_visuals": 10,
+    "num_workers": 4,
+    "save_dir": "./save/test\\test1-01",
+    "split": "test",
+    "sub_file": "submission.csv",
+    "test_eval_file": "./data/test_eval.json",
+    "test_record_file": "./data/test.npz",
+    "train_eval_file": "./data/train_eval.json",
+    "train_record_file": "./data/train.npz",
+    "use_squad_v2": true,
+    "word_emb_file": "./data/word_emb.json"
+}
+[11.28.19 19:28:50] Loading embeddings...
+[11.28.19 19:28:53] Building model...
+[11.28.19 19:28:53] Loading checkpoint from .\save\train\baseline-01\best.pth.tar...
+[11.28.19 19:28:56] Building dataset...
+[11.28.19 19:28:57] Evaluating on test split...
+[11.28.19 19:29:08] Writing submission file to ./save/test\test1-01\test_submission.csv...
